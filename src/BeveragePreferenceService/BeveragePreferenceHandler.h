@@ -33,11 +33,18 @@ void BeveragePreferenceServiceHandler::GetBeverage(std::string& _return,const Be
      // Your implementation goes here
      printf("GetBeverage\n");
 
+     std::string hotBeverage[3] = {"cappuccino" ,"latte", "espresso"};
+     std::string coldBeverage[3] = {"lemonade" , "ice tea", "soda"};
+     
+     srand(time(0));
     // randomly select a beverage
-    if (b == BeverageType::type::HOT)
-	    _return = "COLD";
-    else
-	    _return = "HOT";
+    //if (b == BeverageType::type::HOT)
+	    //_return = hotBeverage[rand() % 3];
+    //else
+	    //_return = coldBeverage[rand() % 3];
+	  
+     _return = "from beverage service";
+
 }
 
 } // namespace vending_machine

@@ -57,21 +57,11 @@ void OrderBeverageServiceHandler::PlaceOrder(std::string& _return, const int64_t
     }
     auto weather_client = weather_client_wrapper->GetClient();
 
-    auto beveragePreference_client_wrapper = _beveragePreference_client_pool->Pop();
-     if (!beveragePreference_client_wrapper) {
-	ServiceException se;
-	se.errorCode = ErrorCode::SE_THRIFT_CONN_ERROR;
-	se.message = "Failed to connect to beverage preference-service";
-	throw se;
-	 }
-    auto beveragePreference_client = beveragePreference_client_wrapper->GetClient();
-
     // by default get cold
     WeatherType::type weatherType = WeatherType::type::COLD;
 
     BeverageType::type beverageType = BeverageType::type::COLD;
 
-    std::string beveragePreference = "ice";
     // 2. call the remote procedure : GetWeather
     try {
       weatherType = weather_client->GetWeather(city);
@@ -90,11 +80,23 @@ void OrderBeverageServiceHandler::PlaceOrder(std::string& _return, const int64_t
 	  // _return = BeverageType::type::HOT;
 	BeverageType::type b = BeverageType::type::HOT;
 #endif
- 
+ auto beveragePreference_client_wrapper = _beveragePreference_client_pool->Pop();
+     if (!beveragePreference_client_wrapper) {
+	ServiceException se;
+	se.errorCode = ErrorCode::SE_THRIFT_CONN_ERROR;
+	se.message = "Failed to connect to beverage preference-service";
+	throw se;
+	 }
+  auto beveragePreference_client = beveragePreference_client_wrapper->GetClient();
+
+  // std::string beveragePreference;
+   std::string str = "";
+   std::string& returnPreference = str;
  //BeverageType::type beverageType = BeverageType::type::COLD;
  
  try {
-	 beveragePreference = beveragePreference_client->GetBeverage(b);
+	 beveragePreference_client->GetBeverage(returnPreference, b);
+	 std::cout << "after beverage service call" << std::endl;
  } catch(...) {
 	 _beveragePreference_client_pool->Push(beveragePreference_client_wrapper);
 	 LOG(error) << "Failed to send call GetBeverage to beverage-client";
@@ -102,10 +104,7 @@ void OrderBeverageServiceHandler::PlaceOrder(std::string& _return, const int64_t
  }
  _beveragePreference_client_pool->Push(beveragePreference_client_wrapper);
 
- if(beveragePreference == "COLD")
-	 _return = "latte";
- else
-	 _return = "ice coffee";
+ _return = returnPreference;
 }
 
 } // namespace vending_machine
