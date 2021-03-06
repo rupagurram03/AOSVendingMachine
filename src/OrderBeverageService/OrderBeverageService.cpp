@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 
   // get the client of beverage preference service
   ClientPool<ThriftClient<BeveragePreferenceServiceClient>> beveragePreference_client_pool(
-	"beverage-preference-service", beveragePreference_service_addr, beveragePreference_service_port, 0, 128, 1001);
+	"beverage-preference-service", beveragePreference_service_addr, beveragePreference_service_port, 0, 128, 1000);
 
   // 6: configure this server
   TThreadedServer server(

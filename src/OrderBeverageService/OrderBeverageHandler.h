@@ -43,8 +43,6 @@ void OrderBeverageServiceHandler::PlaceOrder(std::string& _return, const int64_t
      // Your implementation goes here
      printf("PlaceOrder\n");
 
-     BeverageType::type b = BeverageType::type::COLD;
-
      //return BeverageType::type::COLD;
 #if 1   
     // 1. get the weather service client pool
@@ -57,10 +55,18 @@ void OrderBeverageServiceHandler::PlaceOrder(std::string& _return, const int64_t
     }
     auto weather_client = weather_client_wrapper->GetClient();
 
-    // by default get cold
-    WeatherType::type weatherType = WeatherType::type::COLD;
+    auto beveragePreference_client_wrapper = _beveragePreference_client_pool->Pop();
+         if (!beveragePreference_client_wrapper) {
+		         ServiceException se;
+			         se.errorCode = ErrorCode::SE_THRIFT_CONN_ERROR;
+				         se.message = "Failed to connect to beverage preference-service";
+					         throw se;
+						          }
+	   auto beveragePreference_client = beveragePreference_client_wrapper->GetClient();
 
-    BeverageType::type beverageType = BeverageType::type::COLD;
+    WeatherType::type weatherType;
+
+    BeverageType::type b;
 
     // 2. call the remote procedure : GetWeather
     try {
@@ -72,39 +78,47 @@ void OrderBeverageServiceHandler::PlaceOrder(std::string& _return, const int64_t
     }
     _weather_client_pool->Push(weather_client_wrapper);
     
+	std::cout << "after weather service call " <<weatherType<< std::endl;
+
+	std::string returnstr = "";
+	std::string& returnPreference = returnstr;
+
    // 3. business logic
-   if(weatherType == WeatherType::type::WARM)
-	//_return = BeverageType::type::COLD;
-	BeverageType::type b = BeverageType::type::COLD; 
-   else
-	  // _return = BeverageType::type::HOT;
-	BeverageType::type b = BeverageType::type::HOT;
+   if(weatherType == WeatherType::type::WARM) {
+	   BeverageType::type b = BeverageType::type::COLD;
+	   std::cout<<" inside if "<< b<< std::endl;
+
+	   try {
+		std::cout<<"inside try "<< b<< std::endl;
+		beveragePreference_client->GetBeverage(returnPreference, b);
+		std::cout << "after beverage service call" << std::endl;
+		} catch(...) {
+			_beveragePreference_client_pool->Push(beveragePreference_client_wrapper);
+			LOG(error) << "Failed to send call GetBeverage to beverage-client";
+			throw;
+		}
+	    _beveragePreference_client_pool->Push(beveragePreference_client_wrapper);
+	    _return = returnPreference;
+   }
+   else {
+	   BeverageType::type b = BeverageType::type::HOT;
+	   std::cout<<"inside else "<< b<< std::endl;
+
+	   try {
+		std::cout<<"inside try "<< b<< std::endl;
+		beveragePreference_client->GetBeverage(returnPreference, b);
+		std::cout << "after beverage service call" << std::endl;
+		} catch(...) {
+			_beveragePreference_client_pool->Push(beveragePreference_client_wrapper);
+			LOG(error) << "Failed to send call GetBeverage to beverage-client";
+			throw;
+		 }
+	    _beveragePreference_client_pool->Push(beveragePreference_client_wrapper);
+	    _return = returnPreference;
+   }
 #endif
- auto beveragePreference_client_wrapper = _beveragePreference_client_pool->Pop();
-     if (!beveragePreference_client_wrapper) {
-	ServiceException se;
-	se.errorCode = ErrorCode::SE_THRIFT_CONN_ERROR;
-	se.message = "Failed to connect to beverage preference-service";
-	throw se;
-	 }
-  auto beveragePreference_client = beveragePreference_client_wrapper->GetClient();
 
-  // std::string beveragePreference;
-   std::string str = "";
-   std::string& returnPreference = str;
- //BeverageType::type beverageType = BeverageType::type::COLD;
- 
- try {
-	 beveragePreference_client->GetBeverage(returnPreference, b);
-	 std::cout << "after beverage service call" << std::endl;
- } catch(...) {
-	 _beveragePreference_client_pool->Push(beveragePreference_client_wrapper);
-	 LOG(error) << "Failed to send call GetBeverage to beverage-client";
-	 throw;
- }
- _beveragePreference_client_pool->Push(beveragePreference_client_wrapper);
 
- _return = returnPreference;
 }
 
 } // namespace vending_machine

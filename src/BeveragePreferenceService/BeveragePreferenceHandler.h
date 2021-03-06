@@ -29,7 +29,7 @@ BeveragePreferenceServiceHandler::BeveragePreferenceServiceHandler() {
 
 // Remote Procedure "PlaceOrder"
 
-void BeveragePreferenceServiceHandler::GetBeverage(std::string& _return,const BeverageType::type b) {
+void BeveragePreferenceServiceHandler::GetBeverage(std::string& _return,BeverageType::type b) {
      // Your implementation goes here
      printf("GetBeverage\n");
 
@@ -37,13 +37,15 @@ void BeveragePreferenceServiceHandler::GetBeverage(std::string& _return,const Be
      std::string coldBeverage[3] = {"lemonade" , "ice tea", "soda"};
      
      srand(time(0));
+
+     std::cout << "beverage type" <<b<< std::endl;
     // randomly select a beverage
-    //if (b == BeverageType::type::HOT)
-	    //_return = hotBeverage[rand() % 3];
-    //else
-	    //_return = coldBeverage[rand() % 3];
+    if (b == BeverageType::type::HOT)
+	    _return = hotBeverage[rand() % 3];
+    else
+	    _return = coldBeverage[rand() % 3];
 	  
-     _return = "from beverage service";
+    // _return = "from beverage service";
 
 }
 

@@ -12,9 +12,9 @@ services:
     restart: always
     entrypoint: WeatherService
 
-  beveragePreference-service:
+  beverage-preference-service:
      image: rupagurram/vending-machine-microservices:latest
-     hostname: beveragePreference-service
+     hostname: beverage-preference-service
      restart: always
      entrypoint: BeveragePreferenceService
   nginx-thrift:
